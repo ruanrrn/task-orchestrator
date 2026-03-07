@@ -46,6 +46,13 @@ Use it even if you do not adopt any companion skill yet. On its own, it already 
 
 Companion skills make persistence and restart recovery stronger, but they are optional enhancements, not hidden prerequisites.
 
+## Family role
+
+Within this repo family, `task-orchestrator` is the scheduling brain.
+
+Use it when the main problem is ordering, prioritization, and safe parallel execution.
+Do not expect it to become the full continuity bundle; that is exactly how focused repos rot.
+
 ## What the skill teaches
 
 The skill tells the agent to:
