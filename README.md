@@ -1,6 +1,17 @@
 # Task Orchestrator
 
+![Task Orchestrator banner](assets/social-preview.svg)
+
+![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-132A13?style=flat-square)
+![Focus-Multitask Orchestration](https://img.shields.io/badge/Focus-Multitask%20Orchestration-DDA15E?style=flat-square&labelColor=132A13)
+![Works-Standalone](https://img.shields.io/badge/Works-Standalone-E9EDC9?style=flat-square&labelColor=31572C)
+
 An OpenClaw skill for handling multiple user requests with sane scheduling, staged progress updates, and restart-aware continuity.
+
+## Quick pitch
+
+Smart scheduling, prioritization, and staged progress for multi-request work.
+Use it when chat stops being one task and starts becoming an operating queue.
 
 ## Why this exists
 
@@ -103,6 +114,14 @@ These are related, not required:
 
 If you only need the scheduling brain, use this repo alone.
 
+## Social preview
+
+Suggested social preview asset: `assets/social-preview.svg`
+
+Suggested one-line copy:
+
+> Smart scheduling, prioritization, and staged progress for multi-request work.
+
 ## What you get
 
 - `task-orchestrator/` - the skill source
@@ -121,6 +140,8 @@ Use either path:
 task-orchestrator/
 ├── LICENSE
 ├── README.md
+├── assets/
+│   └── social-preview.svg
 ├── task-orchestrator/
 │   └── SKILL.md
 └── dist/
