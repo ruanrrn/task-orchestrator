@@ -88,6 +88,10 @@ A good agent should:
 - `restart-continuity` for top-task restart recovery
 - `task-state-sync` for keeping those two state files updated during live multitask work
 
+Published companion repo:
+
+- `task-state-sync`: `https://github.com/ruanrrn/task-state-sync`
+
 ## What you get
 
 - `task-orchestrator/` - the skill source
