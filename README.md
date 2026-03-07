@@ -1,14 +1,92 @@
 # Task Orchestrator
 
-A reusable OpenClaw skill for handling multiple user requests like a competent operator instead of a FIFO queue with delusions of grandeur.
+An OpenClaw skill for handling multiple user requests with sane scheduling, staged progress updates, and restart-aware continuity.
 
 ## Why this exists
 
-Chat surfaces make it easy for users to send several tasks across separate messages, often with very different runtimes and dependencies. A naive assistant handles those requests in raw arrival order, waits silently on long work, and turns simple multitasking into avoidable chaos.
+Users do not send work in neat little tickets. They send one task, then another, then a third thing that quietly changes the priority of the first two. If an agent handles that stream as a dumb first-in-first-out queue, the result is predictable: long tasks block short ones, blockers wait too long, progress disappears into silence, and restarts scatter the active plan.
 
-`task-orchestrator` turns that mess into an execution policy. It teaches an agent to split incoming requests into discrete tasks, identify dependencies and conflicts, launch independent long-running work early, use wait windows for quick wins, and report partial progress as soon as it is useful.
+`task-orchestrator` exists to stop that nonsense.
 
-This version also integrates with continuity-oriented workspace patterns. Multi-task work should survive restarts and session resets without losing the plot, so the skill explicitly defines how to cooperate with `todo-continuity` and `restart-continuity`.
+It gives an agent a default operating policy for multi-request chat work:
+
+- split incoming messages into discrete tasks
+- identify dependencies, conflicts, urgency, and external wait costs
+- launch valuable long-running work early
+- use wait windows for quick wins
+- report partial results as soon as they are useful
+- cooperate with continuity files so the plan survives restarts
+
+This is not a project manager cosplay prompt. It is a compact execution policy for agents that need to behave like competent operators.
+
+## What the skill teaches
+
+The skill tells the agent to:
+
+- avoid strict arrival-order handling unless the user explicitly asks for it
+- prioritize unblockers, urgency, impact, and runtime economics
+- keep the main thread focused on orchestration and user communication
+- offload slower execution to subthreads or subagents when useful
+- stop and ask only at real decision points, not out of learned helplessness
+- keep `TODO.md` and `memory/active-task.md` aligned when the work spans turns or restarts
+
+## When to use it
+
+Use `task-orchestrator` when:
+
+- a user sends several tasks across separate messages
+- some tasks are quick while others are long-running
+- work can be parallelized safely
+- tasks may conflict or block one another
+- the agent should provide staged progress updates
+- the task bundle should survive session resets or gateway restarts
+
+## Example behavior
+
+### Example 1: mixed workload
+
+User sends:
+
+- "Fix the config bug"
+- "Also summarize this log"
+- "And start a PR review"
+
+A good agent should:
+
+1. inspect whether the config bug is a blocker
+2. launch the PR review as background work if appropriate
+3. summarize the log while waiting on the longer lane
+4. report the config result immediately instead of sitting on it
+
+### Example 2: conflicting work
+
+User sends:
+
+- "Refactor this module"
+- "Do not change the public API yet"
+- "Also rename the exported functions"
+
+A good agent should stop at the conflict and ask which instruction wins, instead of confidently making a mess.
+
+### Example 3: restart-aware multitasking
+
+User sends several active tasks, then the gateway needs a restart.
+
+A good agent should:
+
+1. keep the per-chat unfinished queue in `TODO.md`
+2. keep the current top task in `memory/active-task.md`
+3. schedule the fallback restart nudge if the restart is intentional
+4. resume the top task first after restart
+5. tell the user what resumed without being asked
+
+## Companion skills
+
+`task-orchestrator` works especially well alongside continuity-focused skills:
+
+- `todo-continuity` for per-chat unfinished task tracking
+- `restart-continuity` for top-task restart recovery
+- `task-state-sync` for keeping those two state files updated during live multitask work
 
 ## What you get
 
@@ -21,28 +99,6 @@ Use either path:
 
 1. Import `dist/task-orchestrator.skill` into an OpenClaw environment.
 2. Copy `task-orchestrator/` into your skills directory if you want the editable source.
-
-## When to use the skill
-
-Use it when an agent needs to coordinate more than one task intelligently, especially when:
-
-- a user sends several requests across separate messages
-- some tasks are long-running while others are short
-- work can be parallelized across subthreads or subagents
-- tasks may conflict, block each other, or need staged progress updates
-- work should survive restarts without losing the active plan
-
-## Skill outcome
-
-The skill gives the agent a default multitask policy:
-
-- split incoming requests into real tasks
-- classify them by urgency, blocker value, parallel safety, and runtime
-- start high-value long work early
-- use slack time for quick wins
-- report partial results as they land
-- stop and ask when requests truly conflict
-- keep `TODO.md` and `memory/active-task.md` aligned when continuity matters
 
 ## Repository layout
 
@@ -58,9 +114,10 @@ task-orchestrator/
 
 ## Release hygiene
 
-- Regenerate `dist/task-orchestrator.skill` after each material change to the skill
-- Keep the repository focused on this single skill
-- Keep the trigger language in `SKILL.md` aligned with the repository description
+- Regenerate `dist/task-orchestrator.skill` after each material skill change
+- Keep the repository focused on this skill only
+- Keep the repository description aligned with the trigger language in `SKILL.md`
+- Update examples when the orchestration policy changes in meaningful ways
 
 ## Repository
 
