@@ -15,9 +15,23 @@ It gives an agent a default operating policy for multi-request chat work:
 - launch valuable long-running work early
 - use wait windows for quick wins
 - report partial results as soon as they are useful
-- cooperate with continuity files so the plan survives restarts
+- cooperate with continuity files when the work needs to survive longer than one clean turn
 
 This is not a project manager cosplay prompt. It is a compact execution policy for agents that need to behave like competent operators.
+
+## Works independently
+
+`task-orchestrator` is intentionally useful on its own.
+
+Use it even if you do not adopt any companion skill yet. On its own, it already improves:
+
+- task triage
+- ordering and prioritization
+- safe parallel execution
+- progress reporting
+- conflict handling
+
+Companion skills make persistence and restart recovery stronger, but they are optional enhancements, not hidden prerequisites.
 
 ## What the skill teaches
 
@@ -28,7 +42,7 @@ The skill tells the agent to:
 - keep the main thread focused on orchestration and user communication
 - offload slower execution to subthreads or subagents when useful
 - stop and ask only at real decision points, not out of learned helplessness
-- keep `TODO.md` and `memory/active-task.md` aligned when the work spans turns or restarts
+- keep continuity state aligned when the work spans turns or restarts
 
 ## When to use it
 
@@ -39,7 +53,7 @@ Use `task-orchestrator` when:
 - work can be parallelized safely
 - tasks may conflict or block one another
 - the agent should provide staged progress updates
-- the task bundle should survive session resets or gateway restarts
+- the task bundle may survive session resets or gateway restarts
 
 ## Example behavior
 
@@ -80,17 +94,14 @@ A good agent should:
 4. resume the top task first after restart
 5. tell the user what resumed without being asked
 
-## Companion skills
+## Related skills
 
-`task-orchestrator` works especially well alongside continuity-focused skills:
+These are related, not required:
 
-- `todo-continuity` for per-chat unfinished task tracking
-- `restart-continuity` for top-task restart recovery
-- `task-state-sync` for keeping those two state files updated during live multitask work
+- `task-state-sync`: keeps continuity files accurate during live multitask work — <https://github.com/ruanrrn/task-state-sync>
+- `multi-task-continuity`: umbrella workflow that combines orchestration, state sync, and restart-safe recovery — <https://github.com/ruanrrn/multi-task-continuity>
 
-Published companion repo:
-
-- `task-state-sync`: `https://github.com/ruanrrn/task-state-sync`
+If you only need the scheduling brain, use this repo alone.
 
 ## What you get
 
