@@ -155,6 +155,10 @@ task-orchestrator/
     └── task-orchestrator.skill
 ```
 
+## Contributing
+
+See `CONTRIBUTING.md` for contribution scope, PR expectations, and how to keep this repo focused on orchestration instead of turning it into a junk drawer.
+
 ## Release hygiene
 
 - Regenerate `dist/task-orchestrator.skill` after each material skill change
