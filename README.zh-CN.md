@@ -11,140 +11,147 @@
 ![README-Bilingual](https://img.shields.io/badge/README-Bilingual-E9EDC9?style=flat-square&labelColor=6B705C)
 ![License-MIT](https://img.shields.io/badge/License-MIT-E9EDC9?style=flat-square&labelColor=132A13)
 
-协调多个用户任务，不再掉进天真的先进先出处理坑里。
+为多请求聊天工作提供明确优先级、安全并行执行和分阶段进度汇报的编排策略。
 
-## Quick pitch
+## 概览
 
-给多请求工作提供更聪明的调度、优先级判断和分阶段进度反馈。
-当聊天不再是一件事，而是开始像一个待办队列时，就该用它了。
+`task-orchestrator` 是一个聚焦型 OpenClaw skill，用来处理同一段对话里的多项用户请求，避免代理退化成只会按先进先出排队的队列脑。
 
-## Why this exists
+它给代理定义的是一套多任务聊天执行策略：
 
-用户不会像提交工单那样，整整齐齐一次只发一件事。他们会先丢一个任务，再补一个，然后第三条消息悄悄把前两件事的优先级一起改了。如果代理还按傻乎乎的 FIFO 队列处理，结果基本固定：长任务卡死短任务，真正的 blocker 等太久，进度悄无声息地消失，重启以后计划也散一地。
+- 把连续进入的消息拆成真正的离散任务
+- 识别阻塞项、冲突、紧急程度和等待成本
+- 尽早启动值得提前启动的长耗时工作
+- 在等待窗口里完成短小、低风险任务
+- 在整包任务结束前就主动汇报可独立消费的结果
 
-`task-orchestrator` 就是来收拾这个烂摊子的。
+这个仓库刻意保持窄边界。它负责的是编排策略，不是通用项目管理，也不是单独承担持久化或重启恢复的总方案。
 
-它给代理提供一套处理多请求聊天工作的默认执行策略：
+## 为什么需要它
 
-- 先把连续消息拆成真正的离散任务
-- 识别依赖、冲突、紧急程度和外部等待成本
-- 尽早启动高价值的长耗时工作
-- 在等待窗口里塞进短平快任务
-- 只要有独立有用的结果，就立刻分阶段汇报
-- 当工作会跨轮次或跨重启时，与连续性状态文件协作
+真实用户不会把工作整理成一串互不影响的工单。他们会先发一个请求，再补一个，然后第三条消息把前两件事的优先级一起改掉。
 
-这不是给项目经理 cosplay 用的提示词。这是一套紧凑的执行政策，让代理别再长得像一个只有队列脑的聊天机器人。
+如果没有明确的编排策略，代理通常会在几个老地方翻车：
 
-## Works independently
+- 长任务无意义地挡住短任务
+- 真正的 unblocker 排在低价值工作后面
+- 明明能并行的任务始终没有并行
+- 后台工作还在跑，但进度对用户完全静音
+- 整段对话被处理成队列，而不是执行计划
 
-`task-orchestrator` 单独使用就很有价值。
+`task-orchestrator` 的价值，就是把这些常见失误收敛成一套清晰的默认调度模型。
 
-就算你一个配套技能都不用，它也已经能改善：
+## 适用范围
 
-- 任务分诊
-- 排序与优先级判断
-- 安全并行执行
-- 进度汇报
-- 冲突处理
+当核心问题是“如何在一段活跃对话里协调多项用户任务”时，就该用这个 skill。
 
-配套技能会让持久化和重启恢复更强，但它们是可选增强，不是藏起来的前置依赖。
+适合这些场景：
 
-## What the skill teaches
+- 多个请求跨多条消息到达
+- 有些工作很快，有些工作会跑很久
+- 多项任务可以安全并行
+- 请求之间可能冲突、互相阻塞，或需要分阶段汇报
+- 代理需要判断哪些现在启动，哪些稍后处理
 
-这个技能会告诉代理：
+不适合这些场景：
 
-- 除非用户明确要求，否则不要死守到达顺序
-- 以解除阻塞、紧急程度、影响范围和运行时收益来排序
-- 让主线程专注在编排、用户沟通和决策上
-- 把更慢或更重复的执行下放到子线程或 subagent
-- 只有在真正的决策点才停下来问，不要习得性无助
-- 当工作跨轮次或跨重启时，保持连续性状态同步
+- 不需要编排的单任务回合
+- 单独做连续性状态存储
+- 单独做重启恢复
+- 脱离聊天任务束的通用工作流自动化
 
-## When to use it
+## 这个技能覆盖什么
 
-在这些场景里用 `task-orchestrator`：
+这个技能把多任务执行里最容易出问题的关键动作标准化：
 
-- 用户跨多条消息发来多个任务
-- 有些任务很快，有些任务会跑很久
-- 工作可以安全并行
-- 任务之间可能冲突，或者彼此阻塞
-- 代理需要分阶段主动汇报进度
-- 这一组任务可能跨 session reset 或 gateway restart
+- 按紧急程度、阻塞价值和运行时特征分类任务
+- 除非用户明确要求，否则不按到达顺序死排队
+- 让主线程专注在编排、沟通和决策上
+- 在合适时把较慢的执行下放到子线程或 subagent
+- 遇到真实冲突时停下来确认，而不是擅自猜
+- 只要结果足够有用，就尽早对外汇报
+- 当任务跨轮次或跨重启时，与连续性技能协作
 
-## Example behavior
+## 工作流概览
 
-### Example 1: 混合工作负载
+一次合格的 `task-orchestrator` 执行通常长这样：
 
-用户发送：
+1. 把进入的消息拆成真正的任务集合。
+2. 识别依赖、冲突、风险和大致运行时长。
+3. 尽早启动高价值的长耗时工作。
+4. 用等待窗口吃掉短小、安全的 quick wins。
+5. 有阶段性成果就汇报，不等最后做成总包。
+6. 状态冲突先修复或升级处理，别让它继续扩散。
 
-- "Fix the config bug"
-- "Also summarize this log"
-- "And start a PR review"
+## 何时使用
 
-一个靠谱代理应该：
+当一段对话已经不像“单个请求”，而更像“实时工作队列”时，就该用 `task-orchestrator`。
 
-1. 先判断 config bug 是否是 blocker
-2. 如果合适，把 PR review 作为后台工作启动
-3. 在长任务等待期间顺手完成日志总结
-4. config 结果一出来就立刻汇报，而不是坐着憋总包
+典型触发语句：
 
-### Example 2: 冲突任务
+- “先修 config bug，再顺手总结这个日志，还要启动一个 PR review。”
+- “这两件事能并行就并行，但碰到共享文件先问我。”
+- “每完成一块就告诉我，不要等所有东西都做完。”
+- “中途可能会重启，所以任务顺序和进度别乱掉。”
 
-用户发送：
+## 代表性结果
 
-- "Refactor this module"
-- "Do not change the public API yet"
-- "Also rename the exported functions"
+### 混合负载编排
 
-一个靠谱代理应该在冲突处停下，问清楚哪条指令优先，而不是自信地把现场弄成废墟。
+用户连续发来 blocker 排查、文档请求和一个更长的 review 任务。
 
-### Example 3: 重启感知的多任务处理
+一个靠谱代理应该先查 blocker，把能独立运行的长任务尽早启动，再利用等待时间完成短文档任务，并在每个结果足够独立时立刻汇报。
 
-用户有多项进行中的任务，这时 gateway 需要重启。
+### 冲突感知调度
 
-一个靠谱代理应该：
+两条请求会修改同一批文件，或者约束条件彼此矛盾。
 
-1. 把当前聊天的未完成任务队列写进 `TODO.md`
-2. 把当前最重要的任务写进 `memory/active-task.md`
-3. 如果重启是计划内的，先安排重启后的兜底唤醒
-4. 重启后优先恢复顶部任务
-5. 主动告诉用户恢复了什么，而不是等用户催
+一个靠谱代理应该在真正的决策点停下，问清楚哪条指令优先，而不是自信地把现场搞成事故复盘素材。
 
-## Related skills
+### 面向重启的协作
 
-这些有关联，但不是必需品：
+一组多任务工作很可能跨过重启或 session reset。
 
-- `task-state-sync`: 在多任务执行过程中保持连续性文件准确 - <https://github.com/ruanrrn/task-state-sync>
-- `multi-task-continuity`: 把编排、状态同步和重启恢复打包成一个总流程 - <https://github.com/ruanrrn/multi-task-continuity>
+一个靠谱代理应该把编排策略放在这个 repo 里，同时与负责未完成队列和当前主任务状态的连续性技能协同工作。
 
-如果你只需要调度脑，而不是整套连续性系统，这个仓库单独用就够了。
+## 相关 skill 仓
 
-## Social preview
+这些仓库是相关示例，不是必需依赖：
 
-建议使用的社交预览图：`assets/social-preview.svg`
+- `task-state-sync`：负责在多任务执行过程中保持连续性文件准确的配套仓库 - <https://github.com/ruanrrn/task-state-sync>
+- `multi-task-continuity`：把编排、状态同步和重启恢复整合成完整操作模型的总包仓库 - <https://github.com/ruanrrn/multi-task-continuity>
 
-建议的一句话文案：
+如果你的问题是对话内部的任务排序、并行执行和进度汇报，从这个仓库开始。
+如果你需要的是围绕这些编排策略的完整连续性工作流，就看总包仓库。
 
-> Smart scheduling, prioritization, and staged progress for multi-request work.
-
-GitHub 说明：
-
-- 当前 `gh` CLI 和 GraphQL `UpdateRepositoryInput` 都不提供可写的自定义 social preview 字段。
-- 如果要把这张图用作仓库的 social preview，需要到仓库设置页面手动上传 `assets/social-preview.svg`。
-
-## What you get
-
-- `task-orchestrator/` - 技能源码
-- `dist/task-orchestrator.skill` - 可直接导入的打包产物
-
-## Install
+## 安装
 
 两种方式都可以：
 
 1. 把 `dist/task-orchestrator.skill` 导入 OpenClaw 环境。
-2. 如果你要可编辑源码，就把 `task-orchestrator/` 复制到你的 skills 目录。
+2. 如果你需要可编辑源码，就把 `task-orchestrator/` 复制到你的 skills 目录。
 
-## Repository layout
+## 仓库内容
+
+- `task-orchestrator/` - skill 源码
+- `dist/task-orchestrator.skill` - 可直接导入的打包产物
+- `assets/social-preview.svg` - 仓库 banner 与建议使用的 social-preview 资源
+- `CONTRIBUTING.md` - 贡献范围与仓库级工作流说明
+
+## Social preview
+
+建议使用的 social preview 资源：`assets/social-preview.svg`
+
+建议一句话文案：
+
+> Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
+
+GitHub 说明：
+
+- 当前公开的 `gh` CLI 和 GraphQL `UpdateRepositoryInput` 都不提供可写的自定义 social preview 字段。
+- 如果要把这张图真正设成仓库的 social preview，需要到 GitHub 仓库设置页手动上传 `assets/social-preview.svg`。
+
+## 仓库结构
 
 ```text
 task-orchestrator/
@@ -160,18 +167,18 @@ task-orchestrator/
     └── task-orchestrator.skill
 ```
 
-## Contributing
+## 贡献
 
-见 `CONTRIBUTING.md`，里面写了这个仓库接受什么改动、PR 该交代什么，以及怎么避免把这个仓库养成一个什么都想塞的杂物间。
+见 `CONTRIBUTING.md`。里面写明了贡献范围、打包预期，以及如何让这个仓库继续聚焦多任务编排，而不是把相邻的连续性逻辑也一股脑吞进来。
 
-## Release hygiene
+## 发布卫生
 
-- 只要技能有实质变更，就重新生成 `dist/task-orchestrator.skill`
-- 保持仓库只聚焦这个技能本身
-- 仓库 description 要和 `SKILL.md` 的触发语言一致
-- 编排策略明显变化时，别忘了更新示例
+- 只要 skill 有实质改动，就重新生成 `dist/task-orchestrator.skill`
+- 保持 `README.md`、`README.zh-CN.md`、`task-orchestrator/SKILL.md` 和仓库 metadata 一致
+- 让仓库继续聚焦编排策略，而不是扩张成宽泛的连续性功能集合
+- 当调度策略发生明显变化时，同步更新代表性结果与示例
 
-## Repository
+## 仓库信息
 
 - GitHub: `https://github.com/ruanrrn/task-orchestrator`
 - License: MIT

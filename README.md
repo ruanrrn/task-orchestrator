@@ -11,131 +11,118 @@ English | [简体中文](README.zh-CN.md)
 ![README-Bilingual](https://img.shields.io/badge/README-Bilingual-E9EDC9?style=flat-square&labelColor=6B705C)
 ![License-MIT](https://img.shields.io/badge/License-MIT-E9EDC9?style=flat-square&labelColor=132A13)
 
-Coordinate multiple user tasks without falling into naive first-in-first-out handling.
+Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
 
-## Quick pitch
+## Overview
 
-Smart scheduling, prioritization, and staged progress for multi-request work.
-Use it when chat stops being one task and starts becoming an operating queue.
+`task-orchestrator` is a focused OpenClaw skill for handling several user requests inside the same conversation without defaulting to naive first-in-first-out execution.
+
+It gives the agent an operating policy for multitask chat work:
+
+- split incoming messages into discrete tasks
+- identify blockers, conflicts, urgency, and wait costs
+- start the right long-running work early
+- use idle windows for short, low-risk tasks
+- report partial results before the entire bundle is complete
+
+The repository is intentionally narrow. It defines orchestration behavior, not general project management, and not persistence or restart recovery by itself.
 
 ## Why this exists
 
-Users do not send work in neat little tickets. They send one task, then another, then a third thing that quietly changes the priority of the first two. If an agent handles that stream as a dumb first-in-first-out queue, the result is predictable: long tasks block short ones, blockers wait too long, progress disappears into silence, and restarts scatter the active plan.
+Real users rarely deliver work as a neat sequence of isolated tickets. They send one request, then add another, then introduce a third message that changes the priority of the first two.
 
-`task-orchestrator` exists to stop that nonsense.
+Without an explicit orchestration policy, agents tend to fail in familiar ways:
 
-It gives an agent a default operating policy for multi-request chat work:
+- long tasks block short ones for no good reason
+- important unblockers wait behind lower-value work
+- independent tasks never get parallelized
+- progress goes silent while background work runs
+- the conversation turns into a queue instead of an operating plan
 
-- split incoming messages into discrete tasks
-- identify dependencies, conflicts, urgency, and external wait costs
-- launch valuable long-running work early
-- use wait windows for quick wins
-- report partial results as soon as they are useful
-- cooperate with continuity files when the work needs to survive longer than one clean turn
+`task-orchestrator` exists to replace that failure mode with a clear default scheduling model.
 
-This is not a project manager cosplay prompt. It is a compact execution policy for agents that need to behave like competent operators.
+## Scope
 
-## Works independently
+Use this skill when the problem is coordinating multiple user tasks in one active conversation.
 
-`task-orchestrator` is intentionally useful on its own.
+Good fit:
 
-Use it even if you do not adopt any companion skill yet. On its own, it already improves:
+- several requests arrive across separate messages
+- some work is short while other work is long-running
+- multiple tasks can run safely in parallel
+- requests may conflict, block each other, or require staged reporting
+- the agent needs to decide what to launch now versus what to defer
 
-- task triage
-- ordering and prioritization
-- safe parallel execution
-- progress reporting
-- conflict handling
+Not a fit:
 
-Companion skills make persistence and restart recovery stronger, but they are optional enhancements, not hidden prerequisites.
+- single-task turns that do not need orchestration
+- continuity storage by itself
+- restart recovery by itself
+- general workflow automation outside the chat task bundle
 
-## What the skill teaches
+## What the skill covers
 
-The skill tells the agent to:
+This skill teaches the agent to standardize the parts of multitask execution that most often go wrong:
 
+- classify incoming work by urgency, blockers, and runtime profile
 - avoid strict arrival-order handling unless the user explicitly asks for it
-- prioritize unblockers, urgency, impact, and runtime economics
-- keep the main thread focused on orchestration and user communication
+- keep the main thread focused on orchestration, communication, and decisions
 - offload slower execution to subthreads or subagents when useful
-- stop and ask only at real decision points, not out of learned helplessness
-- keep continuity state aligned when the work spans turns or restarts
+- stop at genuine conflicts instead of guessing
+- surface useful partial results as soon as they are ready
+- cooperate with continuity skills when the task bundle spans turns or restarts
+
+## Workflow summary
+
+A good `task-orchestrator` pass usually looks like this:
+
+1. Break the incoming messages into real tasks.
+2. Identify dependencies, conflicts, risk, and likely runtime.
+3. Launch high-value long-running work early.
+4. Use wait windows for short, safe wins.
+5. Report meaningful partial progress instead of waiting for a final bundle.
+6. Repair or escalate state conflicts before they spread.
 
 ## When to use it
 
-Use `task-orchestrator` when:
+Reach for `task-orchestrator` when the conversation starts acting like a live queue instead of a single request.
 
-- a user sends several tasks across separate messages
-- some tasks are quick while others are long-running
-- work can be parallelized safely
-- tasks may conflict or block one another
-- the agent should provide staged progress updates
-- the task bundle may survive session resets or gateway restarts
+Typical triggers:
 
-## Example behavior
+- "Fix the config bug, then summarize this log, and also start a PR review."
+- "Handle these two issues in parallel, but ask before touching shared files."
+- "Keep me posted as each piece finishes instead of waiting for the whole batch."
+- "We may need to restart midway, so keep the task ordering sane."
 
-### Example 1: mixed workload
+## Representative outcomes
 
-User sends:
+### Mixed workload coordination
 
-- "Fix the config bug"
-- "Also summarize this log"
-- "And start a PR review"
+A user sends a blocker investigation, a documentation request, and a longer review task in quick succession.
 
-A good agent should:
+A good agent should start the blocker check immediately, launch the longer lane early if it can run independently, finish the quick documentation work during wait time, and report each useful result as it lands.
 
-1. inspect whether the config bug is a blocker
-2. launch the PR review as background work if appropriate
-3. summarize the log while waiting on the longer lane
-4. report the config result immediately instead of sitting on it
+### Conflict-aware scheduling
 
-### Example 2: conflicting work
+Two requests touch the same files or impose incompatible constraints.
 
-User sends:
+A good agent should stop at the real decision point, ask which instruction wins, and avoid making a confident mess.
 
-- "Refactor this module"
-- "Do not change the public API yet"
-- "Also rename the exported functions"
+### Restart-aware cooperation
 
-A good agent should stop at the conflict and ask which instruction wins, instead of confidently making a mess.
+A multitask bundle is likely to survive a restart or session reset.
 
-### Example 3: restart-aware multitasking
+A good agent should keep orchestration policy here while coordinating with continuity skills that store unfinished queues and the top active task.
 
-User sends several active tasks, then the gateway needs a restart.
+## Related skill repos
 
-A good agent should:
+These repositories are related examples, not required dependencies:
 
-1. keep the per-chat unfinished queue in `TODO.md`
-2. keep the current top task in `memory/active-task.md`
-3. schedule the fallback restart nudge if the restart is intentional
-4. resume the top task first after restart
-5. tell the user what resumed without being asked
+- `task-state-sync`: companion repo for keeping continuity files accurate while multitask work is in flight - <https://github.com/ruanrrn/task-state-sync>
+- `multi-task-continuity`: umbrella repo that combines orchestration, state sync, and restart-safe recovery into one operating model - <https://github.com/ruanrrn/multi-task-continuity>
 
-## Related skills
-
-These are related, not required:
-
-- `task-state-sync`: keeps continuity files accurate during live multitask work - <https://github.com/ruanrrn/task-state-sync>
-- `multi-task-continuity`: umbrella workflow that combines orchestration, state sync, and restart-safe recovery - <https://github.com/ruanrrn/multi-task-continuity>
-
-If you only need the scheduling brain, use this repo alone.
-
-## Social preview
-
-Suggested social preview asset: `assets/social-preview.svg`
-
-Suggested one-line copy:
-
-> Smart scheduling, prioritization, and staged progress for multi-request work.
-
-GitHub note:
-
-- The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
-- To use this image as the repository social preview, upload `assets/social-preview.svg` manually in the repo settings UI.
-
-## What you get
-
-- `task-orchestrator/` - the skill source
-- `dist/task-orchestrator.skill` - packaged artifact ready to import
+Start with this repo when the problem is task ordering, parallel execution, and progress reporting inside the conversation itself.
+Use the umbrella repo when you want the broader continuity workflow around that orchestration policy.
 
 ## Install
 
@@ -143,6 +130,26 @@ Use either path:
 
 1. Import `dist/task-orchestrator.skill` into an OpenClaw environment.
 2. Copy `task-orchestrator/` into your skills directory if you want the editable source.
+
+## What this repo contains
+
+- `task-orchestrator/` - the skill source
+- `dist/task-orchestrator.skill` - the packaged artifact ready to import
+- `assets/social-preview.svg` - the repository banner and suggested social-preview asset
+- `CONTRIBUTING.md` - contribution scope and repo-specific workflow guidance
+
+## Social preview
+
+Suggested social preview asset: `assets/social-preview.svg`
+
+Suggested one-line copy:
+
+> Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
+
+GitHub note:
+
+- The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
+- To use this image as the repository social preview, upload `assets/social-preview.svg` manually in the repo settings UI.
 
 ## Repository layout
 
@@ -162,14 +169,14 @@ task-orchestrator/
 
 ## Contributing
 
-See `CONTRIBUTING.md` for contribution scope, PR expectations, and how to keep this repo focused on orchestration instead of turning it into a junk drawer.
+See `CONTRIBUTING.md` for contribution scope, packaging expectations, and the boundary that keeps this repository focused on multitask orchestration rather than absorbing adjacent continuity logic.
 
 ## Release hygiene
 
-- Regenerate `dist/task-orchestrator.skill` after each material skill change
-- Keep the repository focused on this skill only
-- Keep the repository description aligned with the trigger language in `SKILL.md`
-- Update examples when the orchestration policy changes in meaningful ways
+- regenerate `dist/task-orchestrator.skill` after each material skill change
+- keep `README.md`, `README.zh-CN.md`, `task-orchestrator/SKILL.md`, and repository metadata aligned
+- keep this repository focused on orchestration policy instead of broad continuity features
+- refresh representative outcomes when the scheduling policy changes materially
 
 ## Repository
 
