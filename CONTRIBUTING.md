@@ -22,7 +22,8 @@ Avoid:
 1. Make the smallest useful change.
 2. Keep README claims aligned with the actual skill behavior.
 3. Regenerate `dist/task-orchestrator.skill` after material skill changes.
-4. Keep examples concrete rather than theoretical.
+4. Keep `README.md` and `README.zh-CN.md` aligned when the public pitch changes.
+5. Keep examples concrete rather than theoretical.
 
 ## Pull request guidance
 

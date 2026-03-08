@@ -1,14 +1,17 @@
 # Task Orchestrator
 
+English | [简体中文](README.zh-CN.md)
+
 ![Task Orchestrator banner](assets/social-preview.svg)
 
 ![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-132A13?style=flat-square)
 ![Focus-Multitask Orchestration](https://img.shields.io/badge/Focus-Multitask%20Orchestration-DDA15E?style=flat-square&labelColor=132A13)
 ![Works-Standalone](https://img.shields.io/badge/Works-Standalone-E9EDC9?style=flat-square&labelColor=31572C)
 ![Artifact-.skill Included](https://img.shields.io/badge/Artifact-.skill%20Included-B7C89A?style=flat-square&labelColor=31572C)
+![README-Bilingual](https://img.shields.io/badge/README-Bilingual-E9EDC9?style=flat-square&labelColor=6B705C)
 ![License-MIT](https://img.shields.io/badge/License-MIT-E9EDC9?style=flat-square&labelColor=132A13)
 
-An OpenClaw skill for handling multiple user requests with sane scheduling, staged progress updates, and restart-aware continuity.
+Coordinate multiple user tasks without falling into naive first-in-first-out handling.
 
 ## Quick pitch
 
@@ -45,13 +48,6 @@ Use it even if you do not adopt any companion skill yet. On its own, it already 
 - conflict handling
 
 Companion skills make persistence and restart recovery stronger, but they are optional enhancements, not hidden prerequisites.
-
-## Family role
-
-Within this repo family, `task-orchestrator` is the scheduling brain.
-
-Use it when the main problem is ordering, prioritization, and safe parallel execution.
-Do not expect it to become the full continuity bundle; that is exactly how focused repos rot.
 
 ## What the skill teaches
 
@@ -118,8 +114,8 @@ A good agent should:
 
 These are related, not required:
 
-- `task-state-sync`: keeps continuity files accurate during live multitask work — <https://github.com/ruanrrn/task-state-sync>
-- `multi-task-continuity`: umbrella workflow that combines orchestration, state sync, and restart-safe recovery — <https://github.com/ruanrrn/multi-task-continuity>
+- `task-state-sync`: keeps continuity files accurate during live multitask work - <https://github.com/ruanrrn/task-state-sync>
+- `multi-task-continuity`: umbrella workflow that combines orchestration, state sync, and restart-safe recovery - <https://github.com/ruanrrn/multi-task-continuity>
 
 If you only need the scheduling brain, use this repo alone.
 
@@ -154,6 +150,8 @@ Use either path:
 task-orchestrator/
 ├── LICENSE
 ├── README.md
+├── README.zh-CN.md
+├── CONTRIBUTING.md
 ├── assets/
 │   └── social-preview.svg
 ├── task-orchestrator/

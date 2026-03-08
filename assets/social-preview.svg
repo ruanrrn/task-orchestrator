@@ -1,13 +1,32 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1280" height="640" fill="#F6F1E8"/>
+  <rect width="1280" height="640" fill="#F5EFE3"/>
   <rect x="48" y="48" width="1184" height="544" rx="28" fill="#132A13"/>
   <rect x="84" y="84" width="230" height="40" rx="20" fill="#DDA15E"/>
   <text x="106" y="110" fill="#132A13" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
-  <text x="84" y="230" fill="#F6F1E8" font-family="Georgia, serif" font-size="78" font-weight="700">Task Orchestrator</text>
-  <text x="84" y="300" fill="#E9EDC9" font-family="Arial, sans-serif" font-size="30">Smart scheduling, prioritization, and staged progress for multi-request work.</text>
-  <text x="84" y="360" fill="#B7C89A" font-family="Arial, sans-serif" font-size="26">Use it when chat stops being one task and starts becoming an operating queue.</text>
-  <circle cx="1060" cy="180" r="78" fill="#DDA15E"/>
-  <circle cx="960" cy="330" r="50" fill="#31572C"/>
-  <circle cx="1110" cy="370" r="120" fill="#4F772D"/>
-  <path d="M890 470C930 420 1010 410 1060 445C1110 480 1180 480 1210 450" stroke="#E9EDC9" stroke-width="12" stroke-linecap="round"/>
+
+  <text x="88" y="214" fill="#F6F1E8" font-family="Georgia, serif" font-size="76" font-weight="700">Task</text>
+  <text x="88" y="292" fill="#F6F1E8" font-family="Georgia, serif" font-size="76" font-weight="700">Orchestrator</text>
+  <text x="88" y="360" fill="#E9EDC9" font-family="Arial, sans-serif" font-size="32">Smart scheduling, prioritization, and</text>
+  <text x="88" y="402" fill="#E9EDC9" font-family="Arial, sans-serif" font-size="32">staged progress for multi-request work.</text>
+  <text x="88" y="462" fill="#B7C89A" font-family="Arial, sans-serif" font-size="26">When chat turns into an operating queue,</text>
+  <text x="88" y="500" fill="#B7C89A" font-family="Arial, sans-serif" font-size="26">this keeps the work ordered and moving.</text>
+
+  <rect x="760" y="122" width="390" height="120" rx="24" fill="#31572C"/>
+  <rect x="792" y="156" width="122" height="14" rx="7" fill="#DDA15E"/>
+  <rect x="792" y="186" width="236" height="12" rx="6" fill="#F6F1E8" fill-opacity="0.92"/>
+  <rect x="792" y="210" width="184" height="12" rx="6" fill="#E9EDC9" fill-opacity="0.85"/>
+
+  <rect x="834" y="278" width="332" height="116" rx="24" fill="#F6F1E8" fill-opacity="0.08" stroke="#E9EDC9" stroke-opacity="0.22" stroke-width="4"/>
+  <rect x="866" y="314" width="138" height="14" rx="7" fill="#DDA15E"/>
+  <rect x="866" y="344" width="228" height="12" rx="6" fill="#F6F1E8" fill-opacity="0.92"/>
+  <rect x="866" y="368" width="188" height="12" rx="6" fill="#E9EDC9" fill-opacity="0.85"/>
+
+  <rect x="742" y="438" width="292" height="92" rx="24" fill="#4F772D" fill-opacity="0.72"/>
+  <rect x="774" y="470" width="112" height="12" rx="6" fill="#E9EDC9"/>
+  <rect x="774" y="494" width="184" height="10" rx="5" fill="#F6F1E8" fill-opacity="0.88"/>
+
+  <circle cx="1118" cy="178" r="74" fill="#DDA15E" fill-opacity="0.2" stroke="#DDA15E" stroke-width="4"/>
+  <circle cx="1132" cy="470" r="56" fill="#B7C89A" fill-opacity="0.12" stroke="#B7C89A" stroke-width="4" stroke-opacity="0.5"/>
+  <path d="M1046 244C1084 264 1110 292 1124 328" stroke="#DDA15E" stroke-width="10" stroke-linecap="round"/>
+  <path d="M1038 422C1084 404 1128 406 1160 426" stroke="#E9EDC9" stroke-width="10" stroke-linecap="round"/>
 </svg>
