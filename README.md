@@ -1,128 +1,121 @@
 # Task Orchestrator
 
-English | [简体中文](README.zh-CN.md)
+English | [中文](README.zh-CN.md) | [Restart Continuity](assets/restart-continuity-badge.svg)
 
-![Task Orchestrator banner](assets/social-preview.svg)
+An OpenClaw skill for handling multi-task chat without falling into naive first-in-first-out execution.
 
-![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-132A13?style=flat-square)
-![Focus-Multitask Orchestration](https://img.shields.io/badge/Focus-Multitask%20Orchestration-DDA15E?style=flat-square&labelColor=132A13)
-![Works-Standalone](https://img.shields.io/badge/Works-Standalone-E9EDC9?style=flat-square&labelColor=31572C)
-![Artifact-.skill Included](https://img.shields.io/badge/Artifact-.skill%20Included-B7C89A?style=flat-square&labelColor=31572C)
-![README-Bilingual](https://img.shields.io/badge/README-Bilingual-E9EDC9?style=flat-square&labelColor=6B705C)
-![License-MIT](https://img.shields.io/badge/License-MIT-E9EDC9?style=flat-square&labelColor=132A13)
+![Engage | [TASK ORCHESTRATOR](assets/social-preview.svg)
+![Focus Multitask](https://img.shields.io/badge/focus-multitask-scheduling?style=flat-square&labelColor=18B42F)
+![Works Stalone](https://img.shields.io/badge/works-stalone-yes?style=flat-square&labelColor=351735)
 
-Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
+Coordinate multi-task chat with explicit scheduling, safe parallelism, and staged progress updates.
 
 ## Overview
 
-`task-orchestrator` is a focused OpenClaw skill for handling several user requests inside the same conversation without defaulting to naive first-in-first-out execution.
+`task-orchestrator` is a focused OpenClaw skill for handling multi-task chat without defaulting to naive FIFO queue brain.
 
-It gives the agent an operating policy for multitask chat work:
+It gives the agent an operating policy for multi-task chat:
 
 - split incoming messages into discrete tasks
-- identify blockers, conflicts, urgency, and wait costs
-- start the right long-running work early
-- use idle windows for short, low-risk tasks
-- report partial results before the entire bundle is complete
+- identify blockers, conflicts, urgency, and likely execution time
+- avoid treating chat like a strict queue unless the user explicitly asks for it
+- use idle gaps effectively by running short tasks while long tasks execute
+- report partial results as soon as useful results land
+- stop and ask only when tasks truly conflict, require consent, or need a product choice
 
-The repository is intentionally narrow. It defines orchestration behavior, not general project management, and not persistence or restart recovery by itself.
+The repo is intentionally narrow. It defines scheduling, prioritization, and progress reporting policy. It does not own state persistence—continuity skills own `TODO.md` and `memory/active-task.md`.
 
 ## Why this exists
 
-Real users rarely deliver work as a neat sequence of isolated tickets. They send one request, then add another, then introduce a third message that changes the priority of the first two.
+Real users already deliver work as a neat sequence of isolated ticks. They send multiple requests across separate messages, then introduce another task that changes priorities mid-flight, then expect the assistant to figure out what to run first without asking about everything.
 
-Without an explicit orchestration policy, agents tend to fail in familiar ways:
+About an explicit orchestration policy exists to turn a pile of incoming requests into an execution plan that behaves like a competent operator instead of a chat bot with queue brain.
 
-- long tasks block short ones for no good reason
-- important unblockers wait behind lower-value work
-- independent tasks never get parallelized
-- progress goes silent while background work runs
-- the conversation turns into a queue instead of an operating plan
+It prioritizes by:
 
-`task-orchestrator` exists to replace that failure mode with a clear default scheduling model.
+- blocker removal (tasks that unblock other work or wait on an external system)
+- urgency (time-sensitive or user-explicitly prioritized)
+- external wait cost (start long-running tasks early so they're not blocking later)
+- impact (high-value tasks over low-value noise)
+
+Timestamp alone is weak evidence. A later message that unblocks everything else can jump the queue.
 
 ## Scope
 
-Use this skill when the problem is coordinating multiple user tasks in one active conversation.
+Use this skill when the conversation pattern is coordinating multi-task chat:
 
-Good fit:
+- a user sends several requests across separate messages
+- some tasks are long-running and others are short
+- work can be parallelized across subthreads or subagents
+- tasks may conflict, block each other, or need staged progress updates
+- the conversation needs explicit scheduling decisions, not just "do everything in order"
 
-- several requests arrive across separate messages
-- some work is short while other work is long-running
-- multiple tasks can run safely in parallel
-- requests may conflict, block each other, or require staged reporting
-- the agent needs to decide what to launch now versus what to defer
+## What this skill covers
 
-Not a fit:
+This skill teaches the agent default scheduling heuristics and conflict resolution patterns:
 
-- single-task turns that do not need orchestration
-- continuity storage by itself
-- restart recovery by itself
-- general workflow automation outside the chat task bundle
+- task classification (blocking, urgent, parallel, interactive, background, quick-win)
+- default scheduling order (unblockers → long-running → quick-wins → cleanup)
+- when to launch work in parallel vs. serial
+- when to report partial results vs. waiting for everything to finish
+- how to resolve file/state conflicts between requests
+- interaction patterns with continuity skills (`todo-continuity` and `restart-continuity`)
 
-## What the skill covers
+**Note on continuity integration:** This skill does not directly edit `TODO.md` or `memory/active-task.md`. It delegates that to `todo-continuity` and `restart-continuity`. This skill only decides scheduling and tells the continuity skills when to persist state.
 
-This skill teaches the agent to standardize the parts of multitask execution that most often go wrong:
+## Quick triage
 
-- classify incoming work by urgency, blockers, and runtime profile
-- avoid strict arrival-order handling unless the user explicitly asks for it
-- keep the main thread focused on orchestration, communication, and decisions
-- offload slower execution to subthreads or subagents when useful
-- stop at genuine conflicts instead of guessing
-- surface useful partial results as soon as they are ready
-- cooperate with continuity skills when the task bundle spans turns or restarts
+For each new task, classify it quickly:
+
+| Category | Meaning | When to prioritize |
+|----------|-----------|-------------------|
+| `blocking` | Unblocks other work or waits on external system | First |
+| `urgent` | Time-sensitive or user-explicitly prioritized | Early |
+| `parallel` | Independent and safe to run alongside other work | Start early if slow |
+| `interactive` | Needs clarification, approval, credentials, or a product choice | Stop and ask |
+| `background` | Long-running execution that can proceed while other work continues | Start early |
+| `quick-win` | Short and low-risk, useful to finish during waits | Fill gaps |
+
+If the user provides `P0/P1/P2`, a numbered order, or an explicit "do X first" instruction, that overrides the default triage.
 
 ## Workflow summary
 
-A good `task-orchestrator` pass usually looks like this:
+A good `task-orchestrator` pass always looks like this:
 
-1. Break the incoming messages into real tasks.
-2. Identify dependencies, conflicts, risk, and likely runtime.
-3. Launch high-value long-running work early.
-4. Use wait windows for short, safe wins.
-5. Report meaningful partial progress instead of waiting for a final bundle.
-6. Repair or escalate state conflicts before they spread.
+1. Break incoming user requests into discrete tasks, not just the order they arrived.
+2. Identify dependencies, conflicts, external waits, risk, and likely execution time.
+3. Launch high-value slow tasks early (background investigations, builds, tests, downloads).
+4. Fill idle gaps with quick wins while long tasks execute.
+5. Report partial results as soon as useful results land; do not wait for all-at-once.
+6. Stop and ask only when tasks conflict, would overwrite each other, or require a user decision.
 
 ## When to use it
 
-Reach for `task-orchestrator` when the conversation starts acting like a live queue instead of a single request.
+Reach for `task-orchestrator` when the conversation starts feeling like multi-task coordination but the agent is defaulting to naive first-in-first-out.
 
 Typical triggers:
 
-- "Fix the config bug, then summarize this log, and also start a PR review."
-- "Handle these two issues in parallel, but ask before touching shared files."
-- "Keep me posted as each piece finishes instead of waiting for the whole batch."
-- "We may need to restart midway, so keep the task ordering sane."
+- "Fix the deploy script, also review this PR, and tell me what happened after the restart."
+- "Create the migration script, but first check if the backup completed, and summarize the recent logs."
+- "Start a long-running build, and while it runs, update the README and fix the linting errors."
+- "P0: Verify production readiness, P1: Run the migration, P2: Send status update to team."
 
-## Representative outcomes
+## Related skills
 
-### Mixed workload coordination
+This skill is part of a continuity family. For state persistence and restart recovery:
 
-A user sends a blocker investigation, a documentation request, and a longer review task in quick succession.
+- **todo-continuity** - Per-chat TODO.md ownership. Use when tasks span turns and `TODO.md` needs to stay accurate: <https://github.com/ruanrrn/todo-continuity>
+- **restart-continuity** - Top-task recovery and restart logic. Use when restarts happen and active work must resume: <https://github.com/ruanrrn/restart-continuity>
 
-A good agent should start the blocker check immediately, launch the longer lane early if it can run independently, finish the quick documentation work during wait time, and report each useful result as it lands.
+**Note:** `task-state-sync` was deprecated in March 2026. Its functionality has been merged into `todo-continuity` (for `TODO.md`) and `restart-continuity` (for `memory/active-task.md`). This skill now delegates to those two instead of `task-state-sync`.
 
-### Conflict-aware scheduling
+## Migration notes
 
-Two requests touch the same files or impose incompatible constraints.
+If you previously used `task-state-sync`:
 
-A good agent should stop at the real decision point, ask which instruction wins, and avoid making a confident mess.
-
-### Restart-aware cooperation
-
-A multitask bundle is likely to survive a restart or session reset.
-
-A good agent should keep orchestration policy here while coordinating with continuity skills that store unfinished queues and the top active task.
-
-## Related skill repos
-
-These repositories are related examples, not required dependencies:
-
-- `task-state-sync`: companion repo for keeping continuity files accurate while multitask work is in flight - <https://github.com/ruanrrn/task-state-sync>
-- `multi-task-continuity`: umbrella repo that combines orchestration, state sync, and restart-safe recovery into one operating model - <https://github.com/ruanrrn/multi-task-continuity>
-
-Start with this repo when the problem is task ordering, parallel execution, and progress reporting inside the conversation itself.
-Use the umbrella repo when you want the broader continuity workflow around that orchestration policy.
+1. Install `todo-continuity` and `restart-continuity`
+2. Uninstall or ignore `task-state-sync`
+3. The behavior is now split between two skills, but overall functionality is preserved
 
 ## Install
 
@@ -135,21 +128,18 @@ Use either path:
 
 - `task-orchestrator/` - the skill source
 - `dist/task-orchestrator.skill` - the packaged artifact ready to import
-- `assets/social-preview.svg` - the repository banner and suggested social-preview asset
-- `CONTRIBUTING.md` - contribution scope and repo-specific workflow guidance
+- `assets/social-preview.svg` - repository banner and suggested social preview asset
 
 ## Social preview
 
-Suggested social preview asset: `assets/social-preview.svg`
+![task-orchestrator social preview](assets/social-preview.svg)
 
-Suggested one-line copy:
-
-> Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
+> Coordinate multiple user tasks without falling into naive first-in-first-out handling.
 
 GitHub note:
 
 - The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
-- To use this image as the repository social preview, upload `assets/social-preview.svg` manually in the repo settings UI.
+- To use this image as the repo's social preview, upload `assets/social-preview.svg` manually in the GitHub repository settings UI.
 
 ## Repository layout
 
@@ -157,28 +147,30 @@ GitHub note:
 task-orchestrator/
 ├── LICENSE
 ├── README.md
-├── README.zh-CN.md
-├── CONTRIBUTING.md
-├── assets/
-│   └── social-preview.svg
 ├── task-orchestrator/
 │   └── SKILL.md
+├── assets/
+│   └── social-preview.svg
 └── dist/
     └── task-orchestrator.skill
 ```
 
 ## Contributing
 
-See `CONTRIBUTING.md` for contribution scope, packaging expectations, and the boundary that keeps this repository focused on multitask orchestration rather than absorbing adjacent continuity logic.
+See `CONTRIBUTING.md` for contribution scope, PR expectations, and what changes belong in this repo versus what should go to broader continuity work.
 
 ## Release hygiene
 
-- regenerate `dist/task-orchestrator.skill` after each material skill change
-- keep `README.md`, `README.zh-CN.md`, `task-orchestrator/SKILL.md`, and repository metadata aligned
-- keep this repository focused on orchestration policy instead of broad continuity features
-- refresh representative outcomes when the scheduling policy changes materially
+- Tag releases with semantic versioning (v1.0.0, v1.0.1, etc.)
+- Keep `CHANGELOG.md` updated with user-facing changes
+- Regenerate `dist/task-orchestrator.skill` after any `SKILL.md` changes
+- Test scheduling heuristics and progress reporting before release
+
+## License
+
+MIT
 
 ## Repository
 
-- GitHub: `https://github.com/ruanrrn/task-orchestrator`
+- GitHub: https://github.com/ruanrrn/task-orchestrator
 - License: MIT
