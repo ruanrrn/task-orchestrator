@@ -1,14 +1,20 @@
 # Task Orchestrator
 
-English | [中文](README.zh-CN.md) | [Restart Continuity](assets/restart-continuity-badge.svg)
+English | [简体中文](README.zh-CN.md)
 
-An OpenClaw skill for handling multi-task chat without falling into naive first-in-first-out execution.
+![Task Orchestrator banner](assets/social-preview.svg)
 
-![Engage | [TASK ORCHESTRATOR](assets/social-preview.svg)
-![Focus Multitask](https://img.shields.io/badge/focus-multitask-scheduling?style=flat-square&labelColor=18B42F)
-![Works Stalone](https://img.shields.io/badge/works-stalone-yes?style=flat-square&labelColor=351735)
+![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-111827?style=flat-square)
+![Focus-Multitask](https://img.shields.io/badge/Focus-Multitask%20Scheduling-5BB2D7?style=flat-square&labelColor=111827)
+![Works-Standalone](https://img.shields.io/badge/Works-Standalone-F9FAFB?style=flat-square&labelColor=1F2937)
+![Artifact-.skill Included](https://img.shields.io/badge/Artifact-.skill%20Included-FDE68A?style=flat-square&labelColor=1F2937)
+![README-Bilingual](https://img.shields.io/badge/README-Bilingual-F9FAFB?style=flat-square&labelColor=92400E)
+![License-MIT](https://img.shields.io/badge/License-MIT-F9FAFB?style=flat-square&labelColor=111827)
 
 Coordinate multi-task chat with explicit scheduling, safe parallelism, and staged progress updates.
+
+> [!IMPORTANT]
+> This standard applies only to repositories whose primary artifact is an OpenClaw skill. It is not a general README, branding, or GitHub styling guide for apps, libraries, or mixed-purpose codebases.
 
 ## Overview
 
@@ -61,22 +67,7 @@ This skill teaches the agent default scheduling heuristics and conflict resoluti
 - how to resolve file/state conflicts between requests
 - interaction patterns with continuity skills (`todo-continuity` and `restart-continuity`)
 
-**Note on continuity integration:** This skill does not directly edit `TODO.md` or `memory/active-task.md`. It delegates that to `todo-continuity` and `restart-continuity`. This skill only decides scheduling and tells the continuity skills when to persist state.
-
-## Quick triage
-
-For each new task, classify it quickly:
-
-| Category | Meaning | When to prioritize |
-|----------|-----------|-------------------|
-| `blocking` | Unblocks other work or waits on external system | First |
-| `urgent` | Time-sensitive or user-explicitly prioritized | Early |
-| `parallel` | Independent and safe to run alongside other work | Start early if slow |
-| `interactive` | Needs clarification, approval, credentials, or a product choice | Stop and ask |
-| `background` | Long-running execution that can proceed while other work continues | Start early |
-| `quick-win` | Short and low-risk, useful to finish during waits | Fill gaps |
-
-If the user provides `P0/P1/P2`, a numbered order, or an explicit "do X first" instruction, that overrides the default triage.
+**Note on continuity integration:** This skill does not directly edit `TODO.md` or `memory/active-task.md`. It delegates that to `todo-continuity` and `restart-continuity`. This skill only decides scheduling and tells continuity skills when to persist state.
 
 ## Workflow summary
 
@@ -96,11 +87,11 @@ Reach for `task-orchestrator` when the conversation starts feeling like multi-ta
 Typical triggers:
 
 - "Fix the deploy script, also review this PR, and tell me what happened after the restart."
-- "Create the migration script, but first check if the backup completed, and summarize the recent logs."
-- "Start a long-running build, and while it runs, update the README and fix the linting errors."
+- "Create a migration script, but first check if the backup completed and summarize the recent logs."
+- "Start a long-running build, and while it runs, update the README and fix linting errors."
 - "P0: Verify production readiness, P1: Run the migration, P2: Send status update to team."
 
-## Related skills
+## Related skill repos
 
 This skill is part of a continuity family. For state persistence and restart recovery:
 
@@ -108,14 +99,6 @@ This skill is part of a continuity family. For state persistence and restart rec
 - **restart-continuity** - Top-task recovery and restart logic. Use when restarts happen and active work must resume: <https://github.com/ruanrrn/restart-continuity>
 
 **Note:** `task-state-sync` was deprecated in March 2026. Its functionality has been merged into `todo-continuity` (for `TODO.md`) and `restart-continuity` (for `memory/active-task.md`). This skill now delegates to those two instead of `task-state-sync`.
-
-## Migration notes
-
-If you previously used `task-state-sync`:
-
-1. Install `todo-continuity` and `restart-continuity`
-2. Uninstall or ignore `task-state-sync`
-3. The behavior is now split between two skills, but overall functionality is preserved
 
 ## Install
 
@@ -128,18 +111,19 @@ Use either path:
 
 - `task-orchestrator/` - the skill source
 - `dist/task-orchestrator.skill` - the packaged artifact ready to import
-- `assets/social-preview.svg` - repository banner and suggested social preview asset
+- `assets/social-preview.svg` - the repository banner and suggested social-preview asset
 
 ## Social preview
 
-![task-orchestrator social preview](assets/social-preview.svg)
+Suggested social preview asset: `assets/social-preview.svg`
+
+Suggested one-line copy:
 
 > Coordinate multiple user tasks without falling into naive first-in-first-out handling.
 
-GitHub note:
-
-- The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
-- To use this image as the repo's social preview, upload `assets/social-preview.svg` manually in the GitHub repository settings UI.
+> [!NOTE]
+> The public `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
+> To use this image as the repo's social preview, upload `assets/social-preview.svg` manually in the repository settings UI.
 
 ## Repository layout
 
@@ -147,6 +131,7 @@ GitHub note:
 task-orchestrator/
 ├── LICENSE
 ├── README.md
+├── README.zh-CN.md
 ├── task-orchestrator/
 │   └── SKILL.md
 ├── assets/
