@@ -2,8 +2,6 @@
 
 [English](README.md) | 简体中文
 
-![Task Orchestrator banner](assets/social-preview.svg)
-
 ![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-132A13?style=flat-square)
 ![Focus-Multitask Orchestration](https://img.shields.io/badge/Focus-Multitask%20Orchestration-DDA15E?style=flat-square&labelColor=132A13)
 ![Works-Standalone](https://img.shields.io/badge/Works-Standalone-E9EDC9?style=flat-square&labelColor=31572C)
@@ -43,7 +41,7 @@
 
 ## 适用范围
 
-当核心问题是“如何在一段活跃对话里协调多项用户任务”时，就该用这个 skill。
+当核心问题是"如何在一段活跃对话里协调多项用户任务"时，就该用这个 skill。
 
 适合这些场景：
 
@@ -85,14 +83,14 @@
 
 ## 何时使用
 
-当一段对话已经不像“单个请求”，而更像“实时工作队列”时，就该用 `task-orchestrator`。
+当一段对话已经不像"单个请求"，而更像"实时工作队列"时，就该用 `task-orchestrator`。
 
 典型触发语句：
 
-- “先修 config bug，再顺手总结这个日志，还要启动一个 PR review。”
-- “这两件事能并行就并行，但碰到共享文件先问我。”
-- “每完成一块就告诉我，不要等所有东西都做完。”
-- “中途可能会重启，所以任务顺序和进度别乱掉。”
+- "先修 config bug，再顺手总结这个日志，还要启动一个 PR review。"
+- "这两件事能并行就并行，但碰到共享文件先问我。"
+- "每完成一块就告诉我，不要等所有东西都做完。"
+- "中途可能会重启，所以任务顺序和进度别乱掉。"
 
 ## 代表性结果
 
@@ -135,21 +133,6 @@
 
 - `task-orchestrator/` - skill 源码
 - `dist/task-orchestrator.skill` - 可直接导入的打包产物
-- `assets/social-preview.svg` - 仓库 banner 与建议使用的 social-preview 资源
-- `CONTRIBUTING.md` - 贡献范围与仓库级工作流说明
-
-## Social preview
-
-建议使用的 social preview 资源：`assets/social-preview.svg`
-
-建议一句话文案：
-
-> Coordinate multi-request chat work with explicit prioritization, safe parallelism, and staged progress reporting.
-
-GitHub 说明：
-
-- 当前公开的 `gh` CLI 和 GraphQL `UpdateRepositoryInput` 都不提供可写的自定义 social preview 字段。
-- 如果要把这张图真正设成仓库的 social preview，需要到 GitHub 仓库设置页手动上传 `assets/social-preview.svg`。
 
 ## 仓库结构
 
@@ -159,8 +142,6 @@ task-orchestrator/
 ├── README.md
 ├── README.zh-CN.md
 ├── CONTRIBUTING.md
-├── assets/
-│   └── social-preview.svg
 ├── task-orchestrator/
 │   └── SKILL.md
 └── dist/
@@ -169,7 +150,7 @@ task-orchestrator/
 
 ## 贡献
 
-见 `CONTRIBUTING.md`。里面写明了贡献范围、打包预期，以及如何让这个仓库继续聚焦多任务编排，而不是把相邻的连续性逻辑也一股脑吞进来。
+见 `CONTRIBUTING.md`。里面写明了贡献范围、PR 预期，以及如何让这个仓库继续聚焦多任务编排，而不是把相邻的连续性逻辑也一股脑吞进来。
 
 ## 发布卫生
 

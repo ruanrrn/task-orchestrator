@@ -2,8 +2,6 @@
 
 English | [简体中文](README.zh-CN.md)
 
-![Task Orchestrator banner](assets/social-preview.svg)
-
 ![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-111827?style=flat-square)
 ![Focus-Multitask](https://img.shields.io/badge/Focus-Multitask%20Scheduling-5BB2D7?style=flat-square&labelColor=111827)
 ![Works-Standalone](https://img.shields.io/badge/Works-Standalone-F9FAFB?style=flat-square&labelColor=1F2937)
@@ -35,7 +33,7 @@ The repo is intentionally narrow. It defines scheduling, prioritization, and pro
 
 Real users already deliver work as a neat sequence of isolated ticks. They send multiple requests across separate messages, then introduce another task that changes priorities mid-flight, then expect the assistant to figure out what to run first without asking about everything.
 
-About an explicit orchestration policy exists to turn a pile of incoming requests into an execution plan that behaves like a competent operator instead of a chat bot with queue brain.
+An explicit orchestration policy exists to turn a pile of incoming requests into an execution plan that behaves like a competent operator instead of a chat bot with queue brain.
 
 It prioritizes by:
 
@@ -54,7 +52,7 @@ Use this skill when the conversation pattern is coordinating multi-task chat:
 - some tasks are long-running and others are short
 - work can be parallelized across subthreads or subagents
 - tasks may conflict, block each other, or need staged progress updates
-- the conversation needs explicit scheduling decisions, not just "do everything in order"
+- conversation needs explicit scheduling decisions, not just "do everything in order"
 
 ## What this skill covers
 
@@ -111,19 +109,6 @@ Use either path:
 
 - `task-orchestrator/` - the skill source
 - `dist/task-orchestrator.skill` - the packaged artifact ready to import
-- `assets/social-preview.svg` - the repository banner and suggested social-preview asset
-
-## Social preview
-
-Suggested social preview asset: `assets/social-preview.svg`
-
-Suggested one-line copy:
-
-> Coordinate multiple user tasks without falling into naive first-in-first-out handling.
-
-> [!NOTE]
-> The public `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
-> To use this image as the repo's social preview, upload `assets/social-preview.svg` manually in the repository settings UI.
 
 ## Repository layout
 
@@ -134,8 +119,6 @@ task-orchestrator/
 ├── README.zh-CN.md
 ├── task-orchestrator/
 │   └── SKILL.md
-├── assets/
-│   └── social-preview.svg
 └── dist/
     └── task-orchestrator.skill
 ```
